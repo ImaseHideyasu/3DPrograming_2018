@@ -18,7 +18,14 @@ Game::Game()
 // Initialize the Direct3D resources required to run.
 void Game::Initialize(HWND window, int width, int height)
 {
-    m_deviceResources->SetWindow(window, width, height);
+	// キーボードオブジェクトの生成
+	m_keyboard = std::make_unique<Keyboard>();
+
+	// マウスオブジェクトの生成
+	m_mouse = std::make_unique<Mouse>();
+	m_mouse->SetWindow(window);
+	
+	m_deviceResources->SetWindow(window, width, height);
 
     m_deviceResources->CreateDeviceResources();
     CreateDeviceDependentResources();
@@ -53,6 +60,24 @@ void Game::Update(DX::StepTimer const& timer)
 
     // TODO: Add your game logic here.
     elapsedTime;
+
+	Keyboard::State kb = m_keyboard->GetState();
+	Mouse::State mouse = m_mouse->GetState();
+
+	// キーボードトラッカー
+	Keyboard::KeyboardStateTracker keyboardTracker;
+	keyboardTracker.Update(kb);
+
+	// マウスのボタントラッカー
+	Mouse::ButtonStateTracker mouseTracker;
+	mouseTracker.Update(mouse);
+
+	// スペースキーが押されたら
+	if (mouseTracker.leftButton == Mouse::ButtonStateTracker::PRESSED)
+	{
+   		int a = 0;
+	}
+
 }
 #pragma endregion
 
@@ -73,6 +98,11 @@ void Game::Render()
 
     // TODO: Add your rendering code here.
     context;
+
+	m_sprites->Begin();
+	m_font->DrawString(m_sprites.get(), L"DirectXTK Simple Sample", XMFLOAT2(100, 10), Colors::Yellow);
+	m_sprites->End();
+
 
     m_deviceResources->PIXEndEvent();
 
@@ -149,10 +179,17 @@ void Game::GetDefaultSize(int& width, int& height) const
 // These are the resources that depend on the device.
 void Game::CreateDeviceDependentResources()
 {
-    auto device = m_deviceResources->GetD3DDevice();
+	auto context = m_deviceResources->GetD3DDeviceContext();
+	auto device = m_deviceResources->GetD3DDevice();
 
     // TODO: Initialize device dependent objects here (independent of window size).
-    device;
+ 
+	// スプライトバッチの生成
+	m_sprites = std::make_unique<SpriteBatch>(context);
+
+	// スプライトフォントの生成
+	m_font = std::make_unique<SpriteFont>(device, L"SegoeUI_18.spritefont");
+
 }
 
 // Allocate all memory resources that change on a window SizeChanged event.
@@ -164,6 +201,8 @@ void Game::CreateWindowSizeDependentResources()
 void Game::OnDeviceLost()
 {
     // TODO: Add Direct3D resource cleanup here.
+	m_sprites.reset();
+	m_font.reset();
 }
 
 void Game::OnDeviceRestored()

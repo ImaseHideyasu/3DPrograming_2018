@@ -7,6 +7,17 @@
 #include "DeviceResources.h"
 #include "StepTimer.h"
 
+// キーボードを使うために必要なヘッダ
+#include <Keyboard.h>
+
+// マウスを使うために必要なヘッダ
+#include <Mouse.h>
+
+// スプライトを使うために必要なヘッダ
+#include <SpriteBatch.h>
+
+// デバッグ用フォントを使うために必要なヘッダ
+#include <SpriteFont.h>
 
 // A basic game implementation that creates a D3D11 device and
 // provides a game loop.
@@ -51,4 +62,16 @@ private:
 
     // Rendering loop timer.
     DX::StepTimer                           m_timer;
+
+	// キーボードオブジェクトへのユニークポインタ
+	std::unique_ptr<DirectX::Keyboard> m_keyboard;
+
+	// マウスオブジェクトへのユニークポインタ
+	std::unique_ptr<DirectX::Mouse> m_mouse;
+
+	// スプライトバッチへのユニークポインタ
+	std::unique_ptr<DirectX::SpriteBatch> m_sprites;
+
+	// スプライトフォントへのユニークポインタ
+	std::unique_ptr<DirectX::SpriteFont> m_font;
 };
