@@ -6,6 +6,7 @@
 #include "Game.h"
 
 using namespace DirectX;
+using namespace DirectX::SimpleMath;
 
 using Microsoft::WRL::ComPtr;
 
@@ -99,7 +100,8 @@ void Game::Render()
     // TODO: Add your rendering code here.
     context;
 
-	m_sprites->Begin();
+	m_sprites->Begin(SpriteSortMode_Deferred, m_states->NonPremultiplied());
+	m_sprites->Draw(m_texture.Get(), Vector2(0.0f, 0.0f));
 	m_font->DrawString(m_sprites.get(), L"DirectXTK Simple Sample", XMFLOAT2(100, 10), Colors::Yellow);
 	m_sprites->End();
 
@@ -183,13 +185,18 @@ void Game::CreateDeviceDependentResources()
 	auto device = m_deviceResources->GetD3DDevice();
 
     // TODO: Initialize device dependent objects here (independent of window size).
- 
+
+	// コモンステートの生成
+	m_states = std::make_unique<CommonStates>(device);
+
 	// スプライトバッチの生成
 	m_sprites = std::make_unique<SpriteBatch>(context);
 
 	// スプライトフォントの生成
 	m_font = std::make_unique<SpriteFont>(device, L"SegoeUI_18.spritefont");
 
+	// テクスチャの読み込み
+	CreateWICTextureFromFile(device, L"Resources\\Textures\\image01.png", nullptr, m_texture.GetAddressOf());
 }
 
 // Allocate all memory resources that change on a window SizeChanged event.
@@ -201,8 +208,10 @@ void Game::CreateWindowSizeDependentResources()
 void Game::OnDeviceLost()
 {
     // TODO: Add Direct3D resource cleanup here.
+	m_states.reset();
 	m_sprites.reset();
 	m_font.reset();
+	m_texture.Reset();
 }
 
 void Game::OnDeviceRestored()
